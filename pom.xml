@@ -2,138 +2,160 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
- 
+
     <modelVersion>4.0.0</modelVersion>
- 
+
+    <!-- Spring Boot Parent -->
     <parent>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-parent</artifactId>
-<version>3.5.7</version>
-<relativePath/>
-</parent>
- 
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.7</version>
+        <relativePath/>
+    </parent>
+
     <groupId>com.user</groupId>
-<artifactId>user-service</artifactId>
-<version>0.0.1-SNAPSHOT</version>
-<name>user-service</name>
-<description>Demo project for Spring Boot</description>
- 
+    <artifactId>user-service</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>user-service</name>
+    <description>Demo project for Spring Boot</description>
+
+    <!-- Java Version -->
     <properties>
-<java.version>17</java.version>
-</properties>
- 
+        <java.version>17</java.version>
+    </properties>
+
     <!-- Nexus Repositories -->
-<repositories>
-<repository>
-<id>nexus-snapshots</id>
-<url>http://3.23.111.54:8081/repository/maven-snapshots/</url>
-<releases>
-<enabled>false</enabled>
-</releases>
-<snapshots>
-<enabled>true</enabled>
-</snapshots>
-</repository>
- 
+    <repositories>
         <repository>
-<id>nexus-releases</id>
-<url>http://3.23.111.54:8081/repository/maven-releases/</url>
-<releases>
-<enabled>true</enabled>
-</releases>
-<snapshots>
-<enabled>false</enabled>
-</snapshots>
-</repository>
-</repositories>
- 
-    <!-- Dependency Management (Optional, if you want central version control) -->
-<dependencyManagement>
-<dependencies>
-<!-- Example: Managing Spring Boot dependencies centrally -->
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-dependencies</artifactId>
-<version>3.5.7</version>
-<type>pom</type>
-<scope>import</scope>
-</dependency>
-</dependencies>
-</dependencyManagement>
- 
+            <id>nexus-snapshots</id>
+            <url>http://3.23.111.54:8081/repository/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+
+        <repository>
+            <id>nexus-releases</id>
+            <url>http://3.23.111.54:8081/repository/maven-releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <!-- Dependency Management -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.5.7</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-actuator</artifactId>
-</dependency>
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-data-jpa</artifactId>
-</dependency>
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-web</artifactId>
-</dependency>
-<dependency>
-<groupId>org.springframework.session</groupId>
-<artifactId>spring-session-data-redis</artifactId>
-</dependency>
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-devtools</artifactId>
-<scope>runtime</scope>
-<optional>true</optional>
-</dependency>
-<dependency>
-<groupId>com.mysql</groupId>
-<artifactId>mysql-connector-j</artifactId>
-<scope>runtime</scope>
-</dependency>
-<dependency>
-<groupId>org.postgresql</groupId>
-<artifactId>postgresql</artifactId>
-<scope>runtime</scope>
-</dependency>
-<dependency>
-<groupId>org.projectlombok</groupId>
-<artifactId>lombok</artifactId>
-<optional>true</optional>
-</dependency>
-<dependency>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-starter-test</artifactId>
-<scope>test</scope>
-</dependency>
-</dependencies>
- 
+
+        <!-- Spring Boot Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
+
+        <!-- DB Drivers -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Jakarta Servlet API (fixes your servlet errors) -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>Lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
     <build>
-<plugins>
-<plugin>
-<groupId>org.apache.maven.plugins</groupId>
-<artifactId>maven-compiler-plugin</artifactId>
-<configuration>
-<annotationProcessorPaths>
-<path>
-<groupId>org.projectlombok</groupId>
-<artifactId>lombok</artifactId>
-</path>
-</annotationProcessorPaths>
-</configuration>
-</plugin>
- 
+        <plugins>
+
+            <!-- Java Compiler Plugin -->
             <plugin>
-<groupId>org.springframework.boot</groupId>
-<artifactId>spring-boot-maven-plugin</artifactId>
-<configuration>
-<excludes>
-<exclude>
-<groupId>org.projectlombok</groupId>
-<artifactId>lombok</artifactId>
-</exclude>
-</excludes>
-</configuration>
-</plugin>
-</plugins>
-</build>
- 
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <!-- Spring Boot Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
 </project>
