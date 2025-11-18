@@ -3,7 +3,6 @@ name: Build, Analyze, Deploy to Docker & Tomcat
 on:
   push:
     branches: [ main ]
-  # Optionally: pull_request for testing PRs
 
 env:
   REPO: yannamsiva/registrationform
@@ -29,15 +28,14 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Set up Maven
-        run: |
-          echo "$HOME/.m2" >> $GITHUB_PATH
-
       - name: Code Quality - SonarQube
         run: |
           mvn clean verify sonar:sonar \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.host.url=https://sonarcloud.io  # or your SonarQube URL
+            -Dsonar.login="${{ secrets.SONAR_TOKEN }}" \
+            -Dsonar.host.url="https://sonarcloud.io"
+            # Add these if using SonarCloud:
+            # -Dsonar.organization=your-sonarcloud-org \
+            # -Dsonar.projectKey=your-project-key
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -46,18 +44,20 @@ jobs:
 
       - name: Determine Project Version
         id: version
+        shell: bash
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-        shell: bash
 
       - name: Upload to Nexus
+        shell: bash  # ← Critical!
         env:
           NEXUS_USER: ${{ secrets.NEXUS_USER }}
           NEXUS_PASS: ${{ secrets.NEXUS_PASS }}
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
           REPO_NAME="${{ env.NEXUS_RELEASE_REPO }}"
-          if [[ "${{ steps.version.outputs.version }}" == *-SNAPSHOT ]]; then
+          if [[ "$VERSION" == *-SNAPSHOT ]]; then
             REPO_NAME="${{ env.NEXUS_SNAPSHOT_REPO }}"
           fi
 
@@ -84,6 +84,7 @@ EOF
           mvn deploy -s settings.xml
 
       - name: Get Latest Artifact from Nexus
+        shell: bash  # ← Critical!
         env:
           NEXUS_USER: ${{ secrets.NEXUS_USER }}
           NEXUS_PASS: ${{ secrets.NEXUS_PASS }}
@@ -94,40 +95,36 @@ EOF
             REPO_ID="${{ env.NEXUS_RELEASE_REPO }}"
           fi
 
-          # For snapshot: we fetch metadata and get latest version
           if [[ "$VERSION" == *-SNAPSHOT ]]; then
             METADATA=$(curl -s -u "${NEXUS_USER}:${NEXUS_PASS}" \
               "${{ env.NEXUS_URL }}/repository/${REPO_ID}/com/aja/first-servlet-app/maven-metadata.xml")
-
             if [[ -z "$METADATA" ]]; then
-              echo "Failed to fetch maven-metadata.xml"
+              echo "ERROR: Failed to fetch maven-metadata.xml"
               exit 1
             fi
-
-            # Extract all versions and take the last
             VERSION=$(echo "$METADATA" | grep -oP '<version>\K[^<]*' | tail -n1)
             if [[ -z "$VERSION" ]]; then
-              echo "No version found in metadata"
+              echo "ERROR: No version found in metadata"
               exit 1
             fi
           fi
 
           echo "Downloading version: $VERSION"
-          curl -u "${NEXUS_USER}:${NEXUS_PASS}" \
+          curl -u "${NEXUS_USER}:${NEXUS_PASS}" -fSL \
             -o app.war \
             "${{ env.NEXUS_URL }}/repository/${REPO_ID}/com/aja/first-servlet-app/${VERSION}/first-servlet-app-${VERSION}.war"
 
       - name: Build Docker Image
         run: |
           cat > Dockerfile <<EOF
-FROM tomcat:9
+FROM tomcat:9-jre11
 COPY app.war /usr/local/tomcat/webapps/ROOT.war
 EOF
           docker build -t ${{ env.REPO }}:latest .
 
       - name: Log in to Docker Hub
         run: |
-          echo "${{ secrets.DOCKERHUB_PASSW }}" | docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin
+          echo "${{ secrets.DOCKERHUB_PASSW }}" | docker login -u "${{ secrets.DOCKERHUB_USER }}" --password-stdin
 
       - name: Push to Docker Hub
         run: docker push ${{ env.REPO }}:latest
@@ -137,6 +134,3 @@ EOF
           docker stop tomcat-app || true
           docker rm tomcat-app || true
           docker run -d --name tomcat-app -p 9090:8080 ${{ env.REPO }}:latest
-
-      # Note: This Tomcat runs only for the duration of the job.
-      # For persistent deployment, consider deploying to a remote server instead.
