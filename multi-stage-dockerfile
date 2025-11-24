@@ -1,0 +1,31 @@
+# ---------------------------
+# STAGE 1: Build Java sources
+# ---------------------------
+FROM openjdk:11-jdk AS builder
+
+WORKDIR /app
+COPY . .
+
+# Create output directories
+RUN mkdir -p build/WEB-INF/classes
+
+# Compile all .java files (excluding irrelevant paths)
+RUN javac -d build/WEB-INF/classes $(find . -name "*.java" -not -path "./node_modules/*")
+
+# Copy web assets (HTML, CSS, JS) into build root
+RUN cp -r *.html *.css *.js build/ 2>/dev/null || true
+
+# ---------------------------
+# STAGE 2: Runtime with Tomcat
+# ---------------------------
+FROM tomcat:10.1-jre11
+
+# Clear default Tomcat ROOT app
+RUN rm -rf /usr/local/tomcat/webapps/ROOT
+
+# Deploy built app as ROOT context
+COPY --from=builder /app/build /usr/local/tomcat/webapps/ROOT
+
+EXPOSE 8080
+
+CMD ["catalina.sh", "run"]
